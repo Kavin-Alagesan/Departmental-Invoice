@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Order -->
+
+<div class="container pt-5">
+    <!-- Message block -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-success text-center" role="alert">
+        {{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    <!-- End message block -->
+
+    {% if if_value %}
+    <form method="POST" action="{% url 'update_order' order_list.order_id %}" enctype="multipart/form-data"
+        onsubmit="return validateForm()" name="myform">
+        {% else %}
+        <form name="formOrder" class="needs-validation" id="formOrderID" method="POST" action="{% url 'create_order' %}"
+            onsubmit="return validateForm()">
+            {%endif%}
+            {% csrf_token %}
+
+            <div class="container text-white p-5 my-5">
+                <div class="row justify-content-end">
+                    <input type="hidden" id="hiddenData" name="hiddenData">
+                    <label class="col-sm-2 col-form-label">Order Number</label>
+                    <div class="col-sm-3">
+                        {% if if_value %}
+                        <input type="text" class="form-control" value="{{order_list.order_no}}" readonly>
+                        {% else %}
+                        <input type="text" class="form-control" id="txtOrderNo" name="txtOrderNo" readonly>
+                        {% endif %}
+                    </div>
+                </div><br>
+
+                <div class="row justify-content-end">
+                    <label class="col-sm-2 col-form-label">Order Date</label>
+                    <div class="col-sm-3">
+                        {% if if_value %}
+
+                        <input type="text" class="form-control" name="txtOrderDate" value="{{order_list.order_date}}"
+                            readonly>
+                        {% else %}
+                        <input type="text" class="form-control" id="txtOrderDate" name="txtOrderDate" readonly>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        <label class="form-label">Select Customer</label>
+                        {% if if_value %}
+                        <select class="form-select" id="ddlCustomer" name="ddlCustomer">
+                            <option selected value="{{ order_list.customer_id.customer_id }}">
+                                {{ order_list.customer_id.name }}</option>
+                        </select>
+                        {% else %}
+                        <select class="form-select" name="ddlCustomer" id="ddlCustomer">
+                            <option value="0" selected="selected">---Select Customer---</option>
+                            {% for data in customer_data %}
+                            <option value="{{ data.customer_id }}">{{ data.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+
+            <div class="container text-white">
+                <div class="class row">
+                    <div class="class col">
+                        <label class="form-label">Product Name</label>
+                        <select class="form-select" id="ddlProductName" name="ddlProductName">
+                            <option value="0" selected="selected">---Select Product---</option>
+                            {% for data in product_data %}
+
+                            <option value="{{ data.product_id }}">{{ data.product_name }}
+                            </option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="class col">
+                        <label class="form-label">Unit</label>
+                        <input class="form-control" id="ddlUnit" name="ddlUnit" readonly>
+                    </div>
+                    <div class="class col">
+                        <label class="form-label">Price</label>
+                        <input class="form-control" id="txtPrice" name="txtPrice" readonly>
+                    </div>
+                    <div class="class col">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="txtQuantity" name="txtQuantity">
+                    </div>
+                    <div class="class col">
+                        <label class="form-label">Amount</label>
+                        <input class="form-control" id="txtAmount" name="txtAmount">
+                    </div>
+                    <div class="class col">
+                        </br>
+                        <button type="button" class="form-control" action="#" class="btn btn-primary" id="add-button-1"
+                            onclick="validateAddProduct()">Add
+                        </button>
+                        <button type="button" id="update-button-1" class="btn btn-success"
+                            onclick="updateOrders()">Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="container p-5 my-5 text-white">
+                <label id="updateRow" style="display: none"></label>
+                <table class="table table-bordered text-white" style="border:5px solid rgb(253, 251, 251);"
+                    width="100%;" id="tableOrderDetails">
+                    <thead>
+                        <h3 style:bgcolor="green">Product Details</h3>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Product name</th>
+                            <th>Unit</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                            <th colspan="2">Action</th>
+                        </tr>
+                    </thead>
+                    {% if if_value %}
+                    <tbody>
+
+                        {% for keys in order_list.details %}
+                        <tr style="text-align:center" id='rowData-{{ forloop.counter }}{{endfor}}'>
+                            <td id='row-{{ forloop.counter }}{{endfor}}'>{{ forloop.counter }}{{endfor}}</td>
+
+                            <td id='rowproductValue-{{ forloop.counter }}{{endfor}}'>{{keys.get_product}}
+                            </td>
+                            <td id="rowUnit-{{ forloop.counter }}{{endfor}}">{{keys.get_unit}}</td>
+                            <td id='rowPrice-{{ forloop.counter }}{{endfor}}'>{{keys.get_product_total}}</td>
+                            <td id='rowQuantity-{{ forloop.counter }}{{endfor}}'>{{keys.get_quantity}}</td>
+                            <td id='rowAmount-{{ forloop.counter }}{{endfor}}'>{{keys.get_total_product_price}}
+                            </td>
+                            <td>
+
+                                <input type="button" class="btn btn-success"
+                                    onclick="editRow('{{ forloop.counter }}{{endfor}}','{{ keys.product_ordered}}')"
+                                    value="Edit">
+
+                            </td>
+                            <td><input type="button" class="btn btn-danger"
+                                    onclick="deleteRow('{{ forloop.counter }}{{endfor}}')" value="Delete"></td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+                    {% else %}
+                    <tbody>
+
+                    </tbody>
+                    {% endif %}
+                    <tfoot>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th name="txtTotalPrice" rowspan="3">Total Price :<span id="txtTotalPrice"></span></th>
+                            <th name="txtTotalQuantity" rowspan="4">Total Qty :<span id="txtTotalQuantity"></span></th>
+                            <th name="txtTotalAmount" rowspan="5">Total Amount :<span id="txtTotalAmount"></span></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="container text-white">
+                <div class="row justify-content-evenly">
+                    <div class="col-4">
+                        <label class="col-sm-2 col-form-label">Description</label>
+                        <textarea rows="3" cols="50" name="txtDescription"
+                            id="txtDescription">{{order_list.description}}</textarea>
+                    </div>
+                    <div class="col-4">
+                        <label class="col-sm-2 col-form-label">Total Amount</label>
+                        <input type="text" class="form-control" name="txtTotalAmt" id="txtTotalAmt"
+                            value="{{order_list.gross_amount}}" readonly>
+                    </div>
+                </div></br>
+                <div class="row justify-content-center">
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <button type="submit" action="#" class="btn btn-primary btn-lg"
+                            onclick="return confirm('Save?')" id='btnSaveOrder' value="SaveOrder">Save Order</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </form>
+</div>
+
+
+
+{% endblock %}

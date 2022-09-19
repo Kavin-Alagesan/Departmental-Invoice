@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container pt-5">
+    <!-- Message block -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-success text-center" role="alert">
+        {{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    <!-- End message block -->
+    <div class="container p-5 my-5 border bg-secondary text-white">
+        <label id="updateRow" style="display: none"></label>
+        <table class="table table-bordered text-white" style="border:5px solid rgb(253, 251, 251);" width="100%;"
+            id="tableOrderList">
+            <thead>
+                <h3>Order List</h3>
+            </thead>
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Order Number</th>
+                    <th>Order Date</th>
+                    <th>Customer Name</th>
+                    <th>Description</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in order_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td style="text-align:center">{{data.order_no}}</td>
+                    <td style="text-align:center">{{data.order_date}}</td>
+                    <td style="text-align:center">{{data.customer_id.name}}</td>
+                    <td style="text-align:center">{{data.description}}</td>
+                    <td style="text-align:center">{{data.gross_amount}}</td>
+                    <form method="POST" action="{% url 'update_order' data.order_id %}">
+                        {% csrf_token %}
+                        <td style="text-align:center"><button type="submit" class="btn btn-success"
+                                id="btnHiddenEditValue" name="btnHiddenEditValue" value="EditOrder">Edit</button>
+                    </form>
+                    <a type="button" class="btn btn-danger" href="{% url 'delete_order' data.order_id %}" onclick="return confirm('Are you sure want to delete order?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}

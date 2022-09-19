@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container p-5 my-5 pt-5">
+    <!-- Message block -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-success text-center" role="alert">
+        {{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    <!-- End message block -->
+    <form name="formCreateCustomer" class="needs-validation" id="formOrderID" method="POST"
+        action="{% url 'create_customer' %}" onsubmit="return validateForm()">
+        {% csrf_token %}
+        <div class="container bg-secondary text-white p-5 my-5 border">
+            <h3>Create Customer</h3>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Customer Name</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" name="txtCustomerName" id="txtCustomerName">
+                </div>
+            </div><br>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Customer Address</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" name="txtCustomerAddress" id="txtCustomerAddress">
+                </div>
+            </div><br>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Customer Phone Number</label>
+                <div class="col-sm-3">
+                    <input type="number" class="form-control" name="txtPhoneNo" id="txtPhoneNo">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div style="text-align:center">
+                    <button class="btn btn-primary" id="btnCustomerSave" type="submit">Save</button>
+                    <a href='{% url "list_customer" %}' class="btn btn-primary"
+                        type="button">Edit customer</button></a>
+                    <a href='{% url "create_customer_and_product" %}' class="btn btn-primary"
+                        type="button">Cancel</button></a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+
+    <form name="formCreateProduct" class="needs-validation" id="formCreateProductID" method="POST"
+        action="{% url 'create_product' %}" onsubmit="return validateForm()">
+        {% csrf_token %}
+        <div class="container bg-secondary text-white p-5 my-5 border">
+            <h3>Create Product</h3>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Product Name</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" name="txtProductName" id="txtProductName">
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Product Price</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" name="txtProductPrice" id="txtProductPrice">
+                </div>
+            </div><br>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Unit Name</label>
+                <select class="col-sm-3 col-form-select" id="ddlUnit" name="ddlUnit">
+                    <option value="0" selected="selected">---Select Unit---</option>
+                    {% for data in unit_data %}
+                    <optgroup>
+                        <option value="{{ data.unit_id }}">{{ data.unit_name }}
+                        </option>
+                    </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <div style="text-align:center">
+                    <button class="btn btn-primary" id="btnProductSave" type="submit">Save</button>
+                    <a href='{% url "list_product" %}' class="btn btn-primary"
+                        type="button">Edit Product</button></a>
+                    <a href='{% url "create_customer_and_product" %}' class="btn btn-primary"
+                        type="button">Cancel</button></a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+
+    <form name="formCreateUnit" class="needs-validation" id="formCreateUnitID" method="POST"
+        action="{% url 'create_unit' %}" onsubmit="return validateForm()">
+        {% csrf_token %}
+        <div class="container bg-secondary text-white p-5 my-5 border">
+            <h3>Unit</h3>
+            <div class="row justify-content-start">
+                <label class="col-sm-2 col-form-label">Create new unit</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" name="txtUnit" id="txtUnit">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div style="text-align:center">
+                    <button class="btn btn-primary" id="btnUnitSave" type="submit">Save</button>
+                    <a href='{% url "list_unit" %}' class="btn btn-primary"
+                        type="button">Edit Unit</button></a>
+                    <a href='{% url "create_customer_and_product" %}' class="btn btn-primary"
+                        type="button">Cancel</button></a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
