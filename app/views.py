@@ -3,6 +3,7 @@ from django.conf import settings
 import requests
 from django.contrib import messages
 import json
+from django.db import transaction
 
 from django.http import HttpResponse
 
@@ -26,9 +27,7 @@ def create_order(request):
         customer=request.POST['ddlCustomer']
         description=request.POST['txtDescription']
         total_amount=request.POST['txtTotalAmt']
-        hiddenData = request.POST['hiddenData']
-        data_json=json.loads(hiddenData)
-
+        
         data={
             'order_no':order_no,
             'order_date':order_date,
@@ -36,42 +35,61 @@ def create_order(request):
             'description':description,
             'gross_amount':total_amount,
             }
-        response=requests.post('{url}order/'.format(url=url), data=data)
-        print('------------postdata-------------')
-        print(data_json)
-        print(type(data_json))
         
-        value =response.text
-        print('------------endpostdata-------------')
-        json_value=json.loads(value)
-        get_order_id=json_value['order_id']
-
-        for return_data in data_json:
-            hidden_product=return_data['get_product']
-            hidden_unit=return_data['get_unit']
-            hidden_price=return_data['get_product_total']
-            hidden_quantity=return_data['get_quantity']
-            hidden_total_amount=return_data['get_total_product_price']
-
-            table_data={
-                'order_id':get_order_id,
-                'get_product':hidden_product,
-                'get_unit':hidden_unit,
-                'get_product_total':hidden_price,
-                'get_quantity':hidden_quantity,
-                'get_total_product_price':hidden_total_amount,
-            }
-
-            table_response=requests.post('{url}order_details/'.format(url=url), data=table_data)
-            print(table_response)
+        # response=requests.post('{url}order/'.format(url=url), data=data)
+        # print('------------postdata-------------')
+        try:
+            hiddenData = request.POST['hiddenData']
+            data_json=json.loads(hiddenData)
+            print(data_json)
+            print(type(data_json))
             
-        messages.success(request,("Order data entered successfully"))
-        return redirect('list_order')
+            with transaction.atomic():
+                response=requests.post('{url}order/'.format(url=url), data=data)
+                print('------------postdata1-------------')
+
+                value =response.text
+                print('------------endpostdata-------------')
+                json_value=json.loads(value)
+                get_order_id=json_value['order_id']
+
+            # value =response.text
+            # print('------------endpostdata-------------')
+            # json_value=json.loads(value)
+            # get_order_id=json_value['order_id']
+
+            for return_data in data_json:
+                hidden_product=return_data['get_product']
+                hidden_unit=return_data['get_unit']
+                hidden_price=return_data['get_product_total']
+                hidden_quantity=return_data['get_quantity']
+                hidden_total_amount=return_data['get_total_product_price']
+
+                table_data={
+                    'order_id':get_order_id,
+                    'get_product':hidden_product,
+                    'get_unit':hidden_unit,
+                    'get_product_total':hidden_price,
+                    'get_quantity':hidden_quantity,
+                    'get_total_product_price':hidden_total_amount,
+                }
+
+                table_response=requests.post('{url}order_details/'.format(url=url), data=table_data)
+                print(table_response)
+                print('------------postdata2-------------')
+            
+            messages.success(request,("Order data entered successfully"))
+            return redirect('list_order')
+        except:
+            messages.error(request,("Data entered failed"))
+            return redirect('create_order')
+
     else:
         print('-------------------------else-------------')
         customer_data=requests.get('{url}customer/'.format(url=url)).json()
         product_data=requests.get('{url}product_nested/'.format(url=url)).json()
         return render(request,"order_manage/create_order.html",{'customer_data':customer_data,'product_data':product_data})
+
 
 def update_orders(request,order_id):
     if request.POST.get('btnSaveorder','') == 'SaveOrder':
